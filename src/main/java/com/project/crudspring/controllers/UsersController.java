@@ -1,4 +1,4 @@
-package com.project.crudspring.controller;
+package com.project.crudspring.controllers;
 
 import com.project.crudspring.DTO.UserDTO;
 import org.modelmapper.ModelMapper;
@@ -12,8 +12,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.project.crudspring.DTO.LoginDTO;
 import com.project.crudspring.config.TokenService;
-import com.project.crudspring.model.User;
-import com.project.crudspring.repository.UserRepository;
+import com.project.crudspring.domain.User;
+import com.project.crudspring.repositories.UserRepository;
 
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
