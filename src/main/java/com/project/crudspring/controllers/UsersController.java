@@ -1,5 +1,7 @@
-package com.project.crudspring.controller;
+package com.project.crudspring.controllers;
 
+import com.project.crudspring.DTO.UserDTO;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -10,8 +12,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.project.crudspring.DTO.LoginDTO;
 import com.project.crudspring.config.TokenService;
-import com.project.crudspring.model.User;
-import com.project.crudspring.repository.UserRepository;
+import com.project.crudspring.domain.User;
+import com.project.crudspring.repositories.UserRepository;
 
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -23,6 +25,7 @@ public class UsersController {
     private UserRepository repository;
     private PasswordEncoder passwordEncoder;
     private TokenService tokenService;
+    private ModelMapper mapper;
 
     @PostMapping("/signup")
     public ResponseEntity<Object> create(@Valid @RequestBody User user, BindingResult result) {
@@ -36,7 +39,7 @@ public class UsersController {
         String encodedPassword = passwordEncoder.encode(user.getPassword());
         user.setPassword(encodedPassword);
         
-        repository.save(user);
+        mapper.map(repository.save(user), UserDTO.class);
 
         return ResponseEntity.status(HttpStatus.OK).body("Usuário criado.");
     }
