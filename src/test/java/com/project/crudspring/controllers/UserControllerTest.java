@@ -78,7 +78,7 @@ class UserControllerTest {
     }
 
     private void startUser() {
-        user = new UserDTO(ID, NAME, EMAIL, PASSWORD);
+        user = new UserDTO(NAME, EMAIL, PASSWORD);
         credentials = new UserDTO(EMAIL, PASSWORD);
     }
 }

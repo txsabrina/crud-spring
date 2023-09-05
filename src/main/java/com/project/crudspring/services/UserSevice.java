@@ -4,6 +4,8 @@ import com.project.crudspring.DTO.UserDTO;
 import com.project.crudspring.config.TokenService;
 import com.project.crudspring.domain.User;
 import com.project.crudspring.repositories.UserRepository;
+
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,8 +28,11 @@ public class UserSevice {
 
         User modifyUser = mapper.map(user, User.class);
 
-        String encodedPassword = passwordEncoder.encode(user.getPassword());
-        user.setPassword(encodedPassword);
+        String encodedPassword = this.passwordEncoder.encode(user.getPassword());
+        modifyUser.setPassword(encodedPassword);
+
+        System.out.println("MODIFYYYYYY  " + modifyUser);
+        System.out.println("ENCODEDDDDDD " + encodedPassword);
 
         User savedUser = repository.save(modifyUser);
 
