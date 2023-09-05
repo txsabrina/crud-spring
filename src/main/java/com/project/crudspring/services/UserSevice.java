@@ -50,8 +50,8 @@ public class UserSevice {
     }
 
     public UserDTO getUser(Integer id) throws Exception {
-        Optional<User> findedUser = repository.findById(id);
-        User user = findedUser.orElseThrow(() -> new Exception("Usuário não encontrado"));
+        Optional<User> userFound = repository.findById(id);
+        User user = userFound.orElseThrow(() -> new Exception("Usuário não encontrado"));
         return mapper.map(user, UserDTO.class);
     }
 

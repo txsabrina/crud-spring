@@ -15,7 +15,7 @@ import org.springframework.validation.BindingResult;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-class UsersControllerTest {
+class UserControllerTest {
 
     private static final Integer ID = 1;
     private static final String NAME = "sabrina";
