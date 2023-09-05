@@ -8,6 +8,6 @@ import java.util.List;
 
 @Repository
 public interface PostsRepository extends JpaRepository<Posts, Integer> {
-    public Posts findByTitle(String title);
-    public List<Posts> findAllByUserId(Integer id);
+    Posts findByTitle(String title);
+    List<Posts> findAllByUserId(Integer id);
 }
