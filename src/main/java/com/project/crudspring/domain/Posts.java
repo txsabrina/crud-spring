@@ -32,6 +32,5 @@ public class Posts {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    @Column
     private User user;
 }
