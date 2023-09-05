@@ -1,25 +1,19 @@
 package com.project.crudspring.controllers;
 
-import com.project.crudspring.DTO.LoginDTO;
-import com.project.crudspring.config.TokenService;
-import com.project.crudspring.domain.User;
-import com.project.crudspring.repositories.UserRepository;
+import com.project.crudspring.DTO.UserDTO;
+import com.project.crudspring.services.UserSevice;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 
 class UsersControllerTest {
 
@@ -27,25 +21,18 @@ class UsersControllerTest {
     private static final String NAME = "sabrina";
     private static final String EMAIL = "sabrina@email.com";
     private static final String PASSWORD = "12345678";
-    private static final String IMAGE = "image.jpg";
-
-    @Mock
-    private UserRepository userRepository;
-
-    @Mock
-    private PasswordEncoder passwordEncoder;
-
-    @Mock
-    private TokenService tokenService;
-
-    @Mock
-    private ModelMapper mapper;
 
     @InjectMocks
-    private UsersController usersController;
+    private UsersController controller;
 
-    private User user;
-    private LoginDTO loginDTO;
+    @Mock
+    private UserSevice service;
+
+    @Mock
+    private BindingResult result;
+
+    private UserDTO user;
+    private UserDTO credentials;
 
 
 
@@ -57,11 +44,11 @@ class UsersControllerTest {
 
     @Test
     void testCreateUserSuccess() {
-        Mockito.when(userRepository.existsByEmail(anyString())).thenReturn(false);
-        Mockito.when(passwordEncoder.encode(anyString())).thenReturn("hashedPassword");
-        Mockito.when(userRepository.save(any(User.class))).thenReturn(user);
+        Mockito.when(result.hasErrors()).thenReturn(false);
+        Mockito.when(service.create(user)).thenReturn("Usuário criado.");
 
-        ResponseEntity<Object> response = usersController.create(user, Mockito.mock(BindingResult.class));
+
+        ResponseEntity<Object> response = controller.create(user,result);
 
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -69,53 +56,29 @@ class UsersControllerTest {
     }
 
     @Test
-    void testCreateUserEmailExists() {
-        Mockito.when(userRepository.existsByEmail(anyString())).thenReturn(true);
+    void testLoginSuccess() throws Exception {
+        Mockito.when(service.login(credentials)).thenReturn("Token");
 
-        ResponseEntity<Object> response = usersController.create(user, Mockito.mock(BindingResult.class));
-
-        assertNotNull(response);
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertEquals("E-mail já cadastrado.", response.getBody());
-    }
-
-    @Test
-    void testLoginSuccess() {
-        Mockito.when(userRepository.findByEmail(anyString())).thenReturn(user);
-        Mockito.when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
-        Mockito.when(tokenService.generateToken(any(User.class))).thenReturn("token");
-
-        ResponseEntity<Object> response = usersController.login(loginDTO);
+        ResponseEntity<Object> response = controller.login(credentials);
 
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("token", response.getBody());
+        assertEquals("Token", response.getBody());
     }
 
     @Test
-    void testLoginUserNotFound() {
-        Mockito.when(userRepository.findByEmail(anyString())).thenReturn(null);
+    void testGetUserSuccess() throws Exception {
+        Mockito.when(service.getUser(ID)).thenReturn(user);
 
-        ResponseEntity<Object> response = usersController.login(loginDTO);
-
-        assertNotNull(response);
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        assertEquals("E-mail não cadastrado", response.getBody());
-    }
-    @Test
-    void testLoginInvalidPassword() {
-        Mockito.when(userRepository.findByEmail(anyString())).thenReturn(user);
-        Mockito.when(passwordEncoder.matches(anyString(), anyString())).thenReturn(false);
-
-        ResponseEntity<Object> response = usersController.login(loginDTO);
+        ResponseEntity<Object> response = controller.getUser(ID);
 
         assertNotNull(response);
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-        assertEquals("Senha incorreta", response.getBody());
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(user, response.getBody());
     }
 
     private void startUser() {
-        user = new User(ID, NAME, EMAIL, PASSWORD, IMAGE);
-        loginDTO = new LoginDTO(EMAIL, PASSWORD);
+        user = new UserDTO(ID, NAME, EMAIL, PASSWORD);
+        credentials = new UserDTO(EMAIL, PASSWORD);
     }
 }
