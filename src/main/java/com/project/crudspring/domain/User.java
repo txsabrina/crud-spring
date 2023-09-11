@@ -1,27 +1,31 @@
 package com.project.crudspring.domain;
 
+import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "users")
+@Table (name = "users")
+@Getter
 public class User {
-    
+
+
+    @OneToMany(mappedBy = "user")
+    private List<Posts> posts = new ArrayList<>();
+
     @Id
+    @Column
     @GeneratedValue(strategy =  GenerationType.IDENTITY)
     private Integer id;
 
@@ -41,6 +45,10 @@ public class User {
     @Size(min = 8, message = "A senha deve ter no mínimo 8 caracteres")
     private String password;
 
-    @Column(length = 200)
-    private String image;
+    public User(String name, String email, String password) {
+        this.name = name;
+        this.email = email;
+        this.password = password;
+
+    }
 }

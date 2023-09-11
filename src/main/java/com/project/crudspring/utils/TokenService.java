@@ -1,4 +1,4 @@
-package com.project.crudspring.config;
+package com.project.crudspring.utils;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -20,6 +20,7 @@ public class TokenService {
     private String secret;
 
     public String generateToken(User user) {
+        
         try {
             Algorithm algorithm = Algorithm.HMAC256(secret);
             String token = JWT.create()
