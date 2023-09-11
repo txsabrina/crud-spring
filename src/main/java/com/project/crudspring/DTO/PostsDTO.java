@@ -24,5 +24,5 @@ public class PostsDTO {
     private LocalDateTime published;
     private LocalDateTime updated;
 
-    private User userId;
+    private UserDTO userId;
 }

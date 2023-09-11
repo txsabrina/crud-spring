@@ -1,7 +1,11 @@
 package com.project.crudspring.controllers;
 
+import com.project.crudspring.DTO.LoginDTO;
 import com.project.crudspring.DTO.UserDTO;
 import com.project.crudspring.services.UserSevice;
+import com.project.crudspring.utils.Auth;
+
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -26,9 +30,15 @@ public class UsersController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Object> login(@RequestBody UserDTO credentials) {
+    public ResponseEntity<Object> login(@RequestBody LoginDTO credentials, HttpServletResponse response) {
         try {
-            return ResponseEntity.status(HttpStatus.OK).body(service.login(credentials));
+            String token = service.login(credentials);
+            UserDTO user = service.getUserByEmail(credentials.getEmail());
+
+            Auth auth = new Auth(token, user);
+
+            response.setHeader("Authorization", "Bearer " + token);
+            return ResponseEntity.status(HttpStatus.OK).body(auth);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }

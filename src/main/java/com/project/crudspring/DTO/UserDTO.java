@@ -1,16 +1,18 @@
 package com.project.crudspring.DTO;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@AllArgsConstructor
 @NoArgsConstructor
 @Data
 public class UserDTO {
+
+    private Integer id;
 
     @NotBlank(message = "O nome é obrigatório")
     @Size(min = 3, message = "O nome deve ter no mínimo 3 caracteres")
@@ -29,5 +31,13 @@ public class UserDTO {
     public UserDTO(String email, String password) {
         this.email = email;
         this.password = password;
+    }
+
+    public UserDTO(Integer id,String name, String email, String password) {
+        this.id = id;
+        this.name = name;
+        this.email = email;
+        this.password = password;
+
     }
 }

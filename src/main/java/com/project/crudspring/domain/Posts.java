@@ -38,13 +38,13 @@ public class Posts {
     private User user;
 
     public Posts() {
-        this.published = LocalDateTime.now();
+        this.setPublished(LocalDateTime.now());
     }
 
     public Posts(String title, String content, User user) {
         this.title = title;
         this.content = content;
-        this.published = LocalDateTime.now();
+        this.setPublished(LocalDateTime.now());
         this.user = user;
     }
 }

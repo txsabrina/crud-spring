@@ -1,5 +1,6 @@
 package com.project.crudspring.controllers;
 
+import com.project.crudspring.DTO.LoginDTO;
 import com.project.crudspring.DTO.UserDTO;
 import com.project.crudspring.services.UserSevice;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,7 +33,7 @@ class UserControllerTest {
     private BindingResult result;
 
     private UserDTO user;
-    private UserDTO credentials;
+    private LoginDTO credentials;
 
 
 
@@ -59,7 +60,7 @@ class UserControllerTest {
     void testLoginSuccess() throws Exception {
         Mockito.when(service.login(credentials)).thenReturn("Token");
 
-        ResponseEntity<Object> response = controller.login(credentials);
+        ResponseEntity<Object> response = controller.login(credentials, null);
 
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -79,6 +80,6 @@ class UserControllerTest {
 
     private void startUser() {
         user = new UserDTO(NAME, EMAIL, PASSWORD);
-        credentials = new UserDTO(EMAIL, PASSWORD);
+        credentials = new LoginDTO(EMAIL, PASSWORD);
     }
 }

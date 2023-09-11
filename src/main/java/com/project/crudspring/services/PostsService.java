@@ -1,37 +1,42 @@
 package com.project.crudspring.services;
 
 import com.project.crudspring.DTO.PostsDTO;
-import com.project.crudspring.config.TokenService;
 import com.project.crudspring.domain.Posts;
 import com.project.crudspring.domain.User;
 import com.project.crudspring.repositories.PostsRepository;
 import com.project.crudspring.repositories.UserRepository;
+import com.project.crudspring.utils.TokenService;
+
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class PostsService {
+public class PostsService implements Serializable{
+    private static final long serialVersionUID = 1L;
 
     PostsRepository repository;
     ModelMapper mapper;
-    TokenService tokenService;
-
     UserRepository userRepository;
 
-
-    private boolean isValidToken(String token, Integer userId) {
-        String emailFromToken = tokenService.validateToken(token);
-
-        return emailFromToken.equals(getEmail(userId));
+    @Autowired
+    public PostsService(PostsRepository repository, ModelMapper mapper, UserRepository userRepository) {
+        this.repository = repository;
+        this.mapper = mapper;
+        this.userRepository = userRepository;
     }
 
-    private String getEmail(Integer userId) {
+
+
+
+    public String getEmail(Integer userId) {
         Optional<User> user = userRepository.findById(userId);
         if(user.isPresent()){
             return user.get().getEmail();

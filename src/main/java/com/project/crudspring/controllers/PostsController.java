@@ -1,7 +1,14 @@
 package com.project.crudspring.controllers;
 
 import com.project.crudspring.DTO.PostsDTO;
+import com.project.crudspring.DTO.UserDTO;
+import com.project.crudspring.domain.User;
 import com.project.crudspring.services.PostsService;
+import com.project.crudspring.services.UserSevice;
+import com.project.crudspring.utils.TokenService;
+
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,49 +17,82 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/posts")
 public class PostsController {
 
     private final PostsService postsService;
+    private final TokenService tokenService;
+    private final UserSevice userSevice;
 
-    public PostsController(PostsService postsService) {
+    public PostsController(PostsService postsService, TokenService tokenService, UserSevice userSevice) {
         this.postsService = postsService;
+        this.tokenService = tokenService;
+        this.userSevice = userSevice;
     }
 
-    @GetMapping("/")
-    public ResponseEntity<List<PostsDTO>> getAllPosts() {
-        List<PostsDTO> posts = postsService.getAllPosts();
-        return ResponseEntity.ok(posts);
+    @GetMapping("/posts")
+    public ResponseEntity<Object> getAllPosts() {
+        try{
+            List<PostsDTO> posts = postsService.getAllPosts();
+            return ResponseEntity.ok(posts);
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/posts/{id}")
     public ResponseEntity<PostsDTO> getPostById(@PathVariable Integer id) {
         Optional<PostsDTO> post = postsService.getPostById(id);
+        
         return post.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @PostMapping("/")
-    public ResponseEntity<PostsDTO> createPost(@RequestBody PostsDTO postDTO) {
+    @PostMapping("/posts")
+    public ResponseEntity<PostsDTO> createPost(@RequestBody PostsDTO postDTO, HttpServletRequest request) {
+        String token = request.getHeader("Authorization");
+        
+        if(token == null || token.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        
+        String tokenWithoutBearer = token.substring(7);
+
+        UserDTO user = isValidToken(tokenWithoutBearer, new User());
+
+         if(user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } 
+
+        postDTO.setUserId(user);
+
         PostsDTO createdPost = postsService.createPost(postDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdPost);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/posts/{id}")
     public ResponseEntity<PostsDTO> updatePost(@PathVariable Integer id, @RequestBody PostsDTO postDTO) {
         PostsDTO updatedPost = postsService.updatePost(id, postDTO);
         return updatedPost != null ? ResponseEntity.ok(updatedPost) : ResponseEntity.notFound().build();
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/posts/{id}")
     public ResponseEntity<Void> deletePost(@PathVariable Integer id) {
         postsService.deletePost(id);
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/user/{id}")
+    @GetMapping("/posts/user/{id}")
     public ResponseEntity<List<PostsDTO>> getPostsByUserId(@PathVariable Integer id) {
         List<PostsDTO> posts = postsService.getPostsByUserId(id);
         return ResponseEntity.ok(posts);
     }
 
+    private UserDTO isValidToken(String token, User user) {
+        try {
+            String email = tokenService.validateToken(token);
+            UserDTO foundedUser = userSevice.getUserByEmail(email);             
+            return foundedUser;
+        } catch (Exception e) {
+            return null;
+        }
+    } 
 }
