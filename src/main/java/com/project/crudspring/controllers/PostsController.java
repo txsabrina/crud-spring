@@ -40,7 +40,20 @@ public class PostsController {
     }
 
     @GetMapping("/posts/{id}")
-    public ResponseEntity<PostsDTO> getPostById(@PathVariable Integer id) {
+    public ResponseEntity<PostsDTO> getPostById(@PathVariable Integer id, HttpServletRequest request) throws Exception {
+        String token = request.getHeader("Authorization");
+
+        if(token == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        UserDTO foundUser = userSevice.getUser(id);
+        
+        UserDTO user = isValidToken(token, foundUser);
+        if(user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } 
+
         Optional<PostsDTO> post = postsService.getPostById(id);
         
         return post.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
@@ -50,14 +63,11 @@ public class PostsController {
     public ResponseEntity<PostsDTO> createPost(@RequestBody PostsDTO postDTO, HttpServletRequest request) {
         String token = request.getHeader("Authorization");
         
-        if(token == null || token.startsWith("Bearer ")) {
+        if(token == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        
-        String tokenWithoutBearer = token.substring(7);
 
-        UserDTO user = isValidToken(tokenWithoutBearer, new User());
-
+        UserDTO user = isValidToken(token, postDTO.getUserId());
          if(user == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         } 
@@ -69,13 +79,39 @@ public class PostsController {
     }
 
     @PutMapping("/posts/{id}")
-    public ResponseEntity<PostsDTO> updatePost(@PathVariable Integer id, @RequestBody PostsDTO postDTO) {
+    public ResponseEntity<PostsDTO> updatePost(@PathVariable Integer id, @RequestBody PostsDTO postDTO, HttpServletRequest request) throws Exception {
+        String token = request.getHeader("Authorization");
+
+        if(token == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        UserDTO foundUser = userSevice.getUser(id);
+        
+        UserDTO user = isValidToken(token, foundUser);
+        if(user == null || id != user.getId()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } 
+        
         PostsDTO updatedPost = postsService.updatePost(id, postDTO);
         return updatedPost != null ? ResponseEntity.ok(updatedPost) : ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("/posts/{id}")
-    public ResponseEntity<Void> deletePost(@PathVariable Integer id) {
+    public ResponseEntity<Void> deletePost(@PathVariable Integer id, HttpServletRequest request) throws Exception {
+        String token = request.getHeader("Authorization");
+
+        if(token == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        UserDTO foundUser = userSevice.getUser(id);
+        
+        UserDTO user = isValidToken(token, foundUser);
+        if(user == null || id != user.getId()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        
         postsService.deletePost(id);
         return ResponseEntity.noContent().build();
     }
@@ -86,7 +122,7 @@ public class PostsController {
         return ResponseEntity.ok(posts);
     }
 
-    private UserDTO isValidToken(String token, User user) {
+    private UserDTO isValidToken(String token, UserDTO user) {
         try {
             String email = tokenService.validateToken(token);
             UserDTO foundedUser = userSevice.getUserByEmail(email);             
