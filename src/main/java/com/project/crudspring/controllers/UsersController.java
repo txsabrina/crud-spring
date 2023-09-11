@@ -26,7 +26,7 @@ public class UsersController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result.getFieldError().getDefaultMessage());
         }
 
-        return ResponseEntity.status(HttpStatus.OK).body(service.create(user));
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.create(user));
     }
 
     @PostMapping("/login")
@@ -37,7 +37,7 @@ public class UsersController {
 
             Auth auth = new Auth(token, user);
 
-            response.setHeader("Authorization", "Bearer " + token);
+            response.setHeader("Authorization", token);
             return ResponseEntity.status(HttpStatus.OK).body(auth);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
