@@ -3,6 +3,10 @@ package com.project.crudspring.controllers;
 import com.project.crudspring.DTO.LoginDTO;
 import com.project.crudspring.DTO.UserDTO;
 import com.project.crudspring.services.UserSevice;
+import com.project.crudspring.utils.Auth;
+
+import jakarta.servlet.http.HttpServletResponse;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -32,6 +36,9 @@ class UserControllerTest {
     @Mock
     private BindingResult result;
 
+    @Mock
+    private HttpServletResponse response;
+
     private UserDTO user;
     private LoginDTO credentials;
 
@@ -52,19 +59,22 @@ class UserControllerTest {
         ResponseEntity<Object> response = controller.create(user,result);
 
         assertNotNull(response);
-        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertEquals("Usuário criado.", response.getBody());
     }
 
     @Test
     void testLoginSuccess() throws Exception {
-        Mockito.when(service.login(credentials)).thenReturn("Token");
-
-        ResponseEntity<Object> response = controller.login(credentials, null);
-
-        assertNotNull(response);
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("Token", response.getBody());
+        // Mock o serviço para retornar um objeto Auth com um token
+        Auth auth = new Auth("Token", null); // O segundo argumento é o usuário, que é nulo no seu caso
+        Mockito.when(service.login(credentials)).thenReturn(auth.getToken());
+    
+        ResponseEntity<Object> responseEntity = controller.login(credentials, response);
+    
+        assertNotNull(responseEntity);
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        assertNotNull(responseEntity.getBody());
+        assertEquals("Token", ((Auth) responseEntity.getBody()).getToken());
     }
 
     @Test

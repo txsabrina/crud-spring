@@ -13,4 +13,9 @@ public class Auth {
         this.token = token;
         this.user = user;
     }
+
+    public String getToken() {
+        return this.token;
+    }
 }
+

@@ -2,7 +2,6 @@ package com.project.crudspring.controllers;
 
 import com.project.crudspring.DTO.PostsDTO;
 import com.project.crudspring.DTO.UserDTO;
-import com.project.crudspring.domain.User;
 import com.project.crudspring.services.PostsService;
 import com.project.crudspring.services.UserSevice;
 import com.project.crudspring.utils.TokenService;

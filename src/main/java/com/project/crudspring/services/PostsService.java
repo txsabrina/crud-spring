@@ -5,7 +5,6 @@ import com.project.crudspring.domain.Posts;
 import com.project.crudspring.domain.User;
 import com.project.crudspring.repositories.PostsRepository;
 import com.project.crudspring.repositories.UserRepository;
-import com.project.crudspring.utils.TokenService;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
