@@ -39,89 +39,116 @@ public class PostsController {
     }
 
     @GetMapping("/posts/{id}")
-    public ResponseEntity<PostsDTO> getPostById(@PathVariable Integer id, HttpServletRequest request) throws Exception {
+    public ResponseEntity<Object> getPostById(@PathVariable Integer id, HttpServletRequest request) throws Exception {
         String token = request.getHeader("Authorization");
+        if(token == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        
+        UserDTO user = isValidToken(token);
+        if(user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
 
+        try {
+            Optional<PostsDTO> post = postsService.getPostById(id);
+            return post.isPresent() ? ResponseEntity.ok(post.get()) : ResponseEntity.notFound().build();  
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+        
+    }
+
+    @PostMapping("/posts")
+    public ResponseEntity<Object> createPost(@RequestBody PostsDTO postDTO, HttpServletRequest request) {
+        String token = request.getHeader("Authorization");
         if(token == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        UserDTO foundUser = userSevice.getUser(id);
-        
-        UserDTO user = isValidToken(token, foundUser);
+        UserDTO user = isValidToken(token);
         if(user == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         } 
 
-        Optional<PostsDTO> post = postsService.getPostById(id);
-        
-        return post.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    @PostMapping("/posts")
-    public ResponseEntity<PostsDTO> createPost(@RequestBody PostsDTO postDTO, HttpServletRequest request) {
-        String token = request.getHeader("Authorization");
-        
-        if(token == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        try {
+            postDTO.setUserId(user);
+            PostsDTO createdPost = postsService.createPost(postDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdPost);
+            
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
 
-        UserDTO user = isValidToken(token, postDTO.getUserId());
-         if(user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        } 
-
-        postDTO.setUserId(user);
-
-        PostsDTO createdPost = postsService.createPost(postDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdPost);
     }
 
     @PutMapping("/posts/{id}")
-    public ResponseEntity<PostsDTO> updatePost(@PathVariable Integer id, @RequestBody PostsDTO postDTO, HttpServletRequest request) throws Exception {
+    public ResponseEntity<Object> updatePost(@PathVariable Integer id, @RequestBody PostsDTO postDTO, HttpServletRequest request) throws Exception {
         String token = request.getHeader("Authorization");
-
         if(token == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        UserDTO foundUser = userSevice.getUser(id);
-        
-        UserDTO user = isValidToken(token, foundUser);
-        if(user == null || id != user.getId()) {
+        PostsDTO foundPost = postsService.getPostById(id).get();
+
+        UserDTO user = isValidToken(token);
+        if(user == null || foundPost.getUserId().getId() != user.getId()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         } 
         
-        PostsDTO updatedPost = postsService.updatePost(id, postDTO);
-        return updatedPost != null ? ResponseEntity.ok(updatedPost) : ResponseEntity.notFound().build();
+        try {
+            PostsDTO updatedPost = postsService.updatePost(id, postDTO);
+            return ResponseEntity.status(HttpStatus.OK).body(updatedPost);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+       
     }
 
     @DeleteMapping("/posts/{id}")
     public ResponseEntity<Void> deletePost(@PathVariable Integer id, HttpServletRequest request) throws Exception {
         String token = request.getHeader("Authorization");
-
         if(token == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        UserDTO foundUser = userSevice.getUser(id);
-        
-        UserDTO user = isValidToken(token, foundUser);
-        if(user == null || id != user.getId()) {
+        PostsDTO foundPost = postsService.getPostById(id).get();
+
+        UserDTO user = isValidToken(token);
+        if(user == null || foundPost.getUserId().getId() != user.getId()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         
-        postsService.deletePost(id);
-        return ResponseEntity.noContent().build();
+        try {
+            postsService.deletePost(id);
+            return ResponseEntity.noContent().build(); 
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
     }
 
     @GetMapping("/posts/user/{id}")
-    public ResponseEntity<List<PostsDTO>> getPostsByUserId(@PathVariable Integer id) {
-        List<PostsDTO> posts = postsService.getPostsByUserId(id);
-        return ResponseEntity.ok(posts);
+    public ResponseEntity<Object> getPostsByUserId(@PathVariable Integer id, HttpServletRequest request) {
+        String token = request.getHeader("Authorization");
+        if(token == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        UserDTO user = isValidToken(token);
+        if(user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        
+        try {
+            List<PostsDTO> posts = postsService.getPostsByUserId(id);
+            return ResponseEntity.ok(posts);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+        
     }
 
-    private UserDTO isValidToken(String token, UserDTO user) {
+    private UserDTO isValidToken(String token) {
         try {
             String email = tokenService.validateToken(token);
             UserDTO foundedUser = userSevice.getUserByEmail(email);             

@@ -56,7 +56,7 @@ public class PostsService implements Serializable{
 
     public Optional<PostsDTO> getPostById(Integer id) {
         Optional<Posts> post = repository.findById(id);
-        return post.map(value -> mapper.map(value, PostsDTO.class));
+        return post.isPresent() ? post.map(value -> mapper.map(value, PostsDTO.class)) : null;
     }
 
 
@@ -80,10 +80,9 @@ public class PostsService implements Serializable{
 
 
     public void deletePost(Integer id) {
-        if (repository.existsById(id)) {
+        Optional<Posts> existingPost = repository.findById(id);
+        if (existingPost.isPresent()) {
             repository.deleteById(id);
-        } else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Post não encontrado");
         }
     }
 
