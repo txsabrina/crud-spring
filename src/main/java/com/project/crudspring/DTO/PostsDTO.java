@@ -1,6 +1,5 @@
 package com.project.crudspring.DTO;
 
-import com.project.crudspring.domain.User;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
